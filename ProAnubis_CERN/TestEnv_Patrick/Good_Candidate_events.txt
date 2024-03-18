@@ -1,0 +1,13 @@
+Good candidate events:
+
+60s:
+
+Event 7 252ns.
+Event 2 255 ns. 
+Event 274 at 245 ns. 
+
+Passing through all 6:
+
+Event 16 at 240ns, PASSES THROUGH ALL 6 RPCS!!! (15ns time window on 
+Event 511 at 229ns
+Event 447 at 234ns
