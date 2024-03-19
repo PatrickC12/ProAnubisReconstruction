@@ -608,6 +608,12 @@ def extract_coords(event,max_cluster_size):
         x_clusters = [x for x in event[2][RPC][0] if len(x)<=max_cluster_size] #phi direction
         y_clusters = [y for y in event[2][RPC][1] if len(y)<=max_cluster_size] #eta direction
 
+        #Finding size of largest cluster, consider coordinates bad if largest cluster is larger than 6.
+        x_clusters_lengths = [len(x) for x in event[2][RPC][0]]
+        y_clusters_lengths = [len(y) for y in event[2][RPC][1]]
+
+        max_length = max(max(x_clusters_lengths, default=0), max(y_clusters_lengths, default=0))
+
         x_coords = []
         y_coords = []
 
@@ -626,8 +632,10 @@ def extract_coords(event,max_cluster_size):
             y_coords.append(np.mean(y_values))
             #x_error
 
-        #Add all coords into array for RPC [[x_Coords],[y_coords]]
-        coords.append([x_coords,y_coords])
+        if x_coords and y_coords and max_length<6:
+            coords.append([x_coords, y_coords])
+        else:
+            coords.append([[],[]])
 
     #coords = [[RPC1_coords],[RPC2_coords],[RPC3_coords],...]
     return(coords)
@@ -700,10 +708,26 @@ def reconstruct(event,max_cluster_size):
 
     coords = extract_coords(event,max_cluster_size)
 
+     # Count the number of empty RPCs
+    empty_RPC_count = sum(1 for item in coords if item == [[], []])
+
+    # # Count the number of non-empty RPCs at the beginning of the coords list
+    # non_empty_count = sum(1 for item in coords[:3] if item != [[], []])
+
+    # # If there are only three non-empty RPCs at the beginning, exit the function
+    # if empty_RPC_count >= 3 and non_empty_count == 3:
+    #     print("Failed to reconstruct, not enough chambers crossed")
+    #     return None  # Exit the function
+
+    # If less than 3 elements of coords are occupied, exit the function
+    if empty_RPC_count > 3:
+        print("Failed to reconstruct, not enough coords")
+        return None  # Exit the function
+
     #ITERATING OVER EVERY POSSIBLE COMBINATION OF x,y,z over all 3 RPCs (limited to one x,y per RPC).
     #Doesn't look particularly nice, but there are not many coordinates to loop over usually....
 
-    combinations = generate_hit_coords_combo(coords,RPC_heights)
+    combinations = ANT.generate_hit_coords_combo(coords,RPC_heights)
 
     #Now for each combo in combinations, attempt to reconstruct a path. See which one gives the best trajectory.
 
@@ -717,7 +741,7 @@ def reconstruct(event,max_cluster_size):
 
     for ind,combo in enumerate(combinations):
 
-        centroid, d, residuals = fit_event(combo)
+        centroid, d, residuals = ANT.fit_event(combo)
         if residuals < residuals_current:
 
             # If new fit is better than old then replace old fit.
@@ -730,7 +754,8 @@ def reconstruct(event,max_cluster_size):
         return optimised_centroid, optimised_d, optimised_coords, combinations, residuals_current
     else:
         print("Failed to reconstruct")
-        return optimised_centroid, optimised_d, optimised_coords, combinations, residuals_current
+        #return optimised_centroid, optimised_d, optimised_coords, combinations, residuals_current
+        return None
 
 def line_equation(t, a, b, c, x0, y0, z0):
     # Define the parametric equation of the line
@@ -766,9 +791,9 @@ def non_interactive_muon_plot(centroid,d,event_coords):
     ax.scatter(centroid[0], centroid[1], centroid[2], color='green', label='Centroid')
 
     # Set labels
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
+    ax.set_xlabel('X/cm')
+    ax.set_ylabel('Y/cm')
+    ax.set_zlabel('Z/cm')
 
     plt.xlim(0,180)
     plt.ylim(0,99)
@@ -1068,7 +1093,7 @@ def plot_event_cluster(event_cluster):
 
         for y in eta_data:
             plt.barh(31-y[0], 64, height=0.8, color='red', alpha=0.5)
-            plt.text(32,(31-y[0])-0.25,f"{x[1]} ns")
+            plt.text(32,(31-y[0])-0.25,f"{y[1]} ns")
 
         #plt.colorbar(label='Counts')
         plt.xlabel('Phi Channel')
