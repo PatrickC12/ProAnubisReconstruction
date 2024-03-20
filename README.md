@@ -6,4 +6,4 @@ I will sort of the files soon. But currently the working code is located in Test
 Relevant functions are located in ANUBIS_triggered_functions.py
 
 TODO:
-- Fix expected muon angular distribution. 
+- Fix expected muon angular distribution. ✔ Done
