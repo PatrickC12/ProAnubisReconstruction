@@ -1,7 +1,7 @@
 # ProAnubisReconstruction
 Repository for scripts to analyse data and reconstruct events from ProAnubis at CERN.
 
-Functions necessary contained in ANUBIS_triggered)functions.py ("ANT") and anubisPlotUtils.py. Folder called scripts contains current working build.
+Functions necessary contained in ANUBIS_triggered_functions.py ("ANT") and anubisPlotUtils.py. Folder called scripts contains current working build.
 
 Relevant functions are located in ANUBIS_triggered_functions.py
 
