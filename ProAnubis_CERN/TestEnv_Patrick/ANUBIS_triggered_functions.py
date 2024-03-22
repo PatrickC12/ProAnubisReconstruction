@@ -1274,3 +1274,135 @@ def convert_cluster_to_plot(clustered_event):
     event_cluster.append(hit_locations)
 
     return event_cluster
+
+def plot_zenith_angle_distribution(angles, title):
+
+    #Histogram plot given anuglar information of hits. angles is just array with elements that are angles from 0 to pi/2 radians.
+    num_points = len(angles)
+
+    theta_vals = np.linspace(0, np.pi / 2, 100000, endpoint=False)
+    probs = [np.sin(x) * (np.cos(x))**2 for x in theta_vals]
+    norm_probs = np.multiply(1 / (np.sum(probs)), probs)
+
+    cdf = np.cumsum(norm_probs)
+    cdf_spacing = np.pi / 2 / 1e5
+
+    plt.figure(figsize=(16,8))
+
+    # Plot histogram of data.
+    num_bins = 100  # Adjust the number of bins as needed
+    counts, bin_edges, _ = plt.hist(angles, bins=num_bins, alpha=0.7, edgecolor='black', label='ProANUBIS muon distribution')
+
+    bin_midpoints = [(bin_edges[i] + bin_edges[i + 1]) / 2 for i in range(len(bin_edges) - 1)]
+    midpoint_freq = []
+
+    for j in range(len(bin_edges) - 1):
+        start_bin_index = int(np.floor(bin_edges[j] / cdf_spacing))
+        end_bin_index = int(np.floor(bin_edges[j + 1] / cdf_spacing))
+        cum_prob = cdf[min(end_bin_index, len(cdf) - 1)] - cdf[start_bin_index]
+        freq = cum_prob * num_points
+        midpoint_freq.append(freq)
+
+    # Plot distribution from literature.
+    plt.plot(bin_midpoints, midpoint_freq, c='red', label='Cosmic Ray muon distribution')
+
+    plt.xlabel("Zenith Angle/ degrees")  # Change the x-axis label
+    plt.ylabel("Count")
+
+    plt.legend(loc='upper right')
+    
+    # Adjust x-axis limits
+    plt.xlim(left=0, right=np.pi / 2)
+  
+    # Convert x-axis ticks from radians to degree
+    x_ticks_degrees = np.linspace(0, 90, num=10)
+    x_ticks_radians = np.radians(x_ticks_degrees)
+
+    plt.xticks(x_ticks_radians, x_ticks_degrees)
+
+    plt.title(f"{title}")
+
+    plt.show()
+
+def plot_angle_distribution(angles, title):
+    #Plot angular distribution given phi and eta angular distribution separately.
+
+    plt.figure(figsize=(16,10))
+
+    # Plot histogram with counts
+    plt.hist(angles, bins=61, density=True,edgecolor='black',alpha=0.7, label='ProANUBIS muon distribution')
+
+    # Define the cosine squared function and plot it
+    x = np.linspace(-np.pi/2, np.pi/2, 100)
+    cos_squared = 2/np.pi * np.cos(x)**2
+    plt.plot(x, cos_squared, color='red', label='Cosmic Muon distribution')
+
+    # Convert radians to degrees for x-ticks
+    x_ticks_degrees = np.linspace(-90, 90, num=19)
+    x_ticks_radians = np.radians(x_ticks_degrees)
+
+    # Set x-ticks labels and positions
+    plt.xticks(x_ticks_radians, x_ticks_degrees)
+
+    plt.text(-1,1.1,f"Number of events = {len(angles)}")
+
+    # Customize the plot
+    plt.xlabel('Angle/ degrees from axis perpendicular to surface of RPCs')
+    plt.ylabel('Relative Occurence')
+    plt.title(title)
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    
+def extract_angles_phi_eta(filtered_events):
+
+    #Input is filtered_events, output of ANT.filter_events() function
+
+    angles_eta = []
+    angles_phi = []
+
+    for i,filtered_event in enumerate(filtered_events):
+
+        result = reconstruct(filtered_event,3)
+
+        if result is not None:
+            #Only save angles that actually were reconstructed well
+            
+            # a.b = |a||b|cos(x)
+
+            #eta angle. 
+            #work out the projection of the direction vector in the plane.
+            
+            v_parr_eta = np.array([0,result[1][1],result[1][2]])
+
+            theta_eta = np.arccos(np.dot(v_parr_eta,[0,0,1]) / np.linalg.norm(v_parr_eta))
+
+            if theta_eta > np.pi / 2:
+                theta_eta= np.pi - theta_eta
+            
+            if v_parr_eta[1] > 0:
+                theta_eta*=-1
+
+            angles_eta.append(theta_eta)
+
+            # Phi angles
+            #work out the projection of the direction vector in the plane.
+            
+            v_parr_phi = np.array([result[1][0],0,result[1][2]])
+
+            theta_phi = np.arccos(np.dot(v_parr_phi,[0,0,1]) / np.linalg.norm(v_parr_phi))
+
+            if theta_phi > np.pi / 2:
+                theta_phi= np.pi - theta_phi
+            
+            if v_parr_phi[0] < 0:
+                theta_phi*=-1
+
+            angles_phi.append(theta_phi)
+
+    return angles_eta, angles_phi
+
+        #ProAnubis setup is at 45 degrees to vertical. 
+        #Project direction vector onto planes to work out phi and eta angular distributions. Should be no assymmetry in phi.
+        #Expect asymmetry in eta. 
+
