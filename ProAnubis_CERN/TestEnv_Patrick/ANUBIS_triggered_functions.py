@@ -909,6 +909,9 @@ def interactive_muon_plot(centroid,d,event_coords):
         }
     )
 
+    #Plot zenith angle
+    # zenith = go.Vector(...)
+
     # Extract x, y, z coordinates from line coordinates
     x_line = line_coordinates[0]
     y_line = line_coordinates[1]
@@ -949,7 +952,9 @@ def interactive_muon_plot(centroid,d,event_coords):
         )
     )
 
-    data = [trace,trace_line,rpc_0,rpc_1,rpc_2,rpc_3,rpc_4,rpc_5,trace_centroid]
+    #Include trace_centroid in data= [] to plot centroid on the plot.
+
+    data = [trace,trace_line,rpc_0,rpc_1,rpc_2,rpc_3,rpc_4,rpc_5]
 
     plot_figure = go.Figure(data=data, layout=layout)
 
