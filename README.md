@@ -13,6 +13,9 @@ TODO:
   - This agrees with the findings from the zenith angle distribution of all the muons. (See angular distributions ppt in "Investigations" folder)
   
 -  Heat map of three hour run.
+
+-  Timing between RPCs. Calibrate channels and RPCs for timing diff. (Find TOF From trajectory and find dT distributions).
+-  Also, find directionality of muon trajectory (vertical directionality) by considering average hit time for Top and Bottom hit RPCs. Trivial task, but at the momen not so important.
   
 -  Find efficiency of RPCs using "Tag and Probe" Method.
    https://espace.cern.ch/lip/pub/docs/LIP-STUDENTS-20-18.pdf
