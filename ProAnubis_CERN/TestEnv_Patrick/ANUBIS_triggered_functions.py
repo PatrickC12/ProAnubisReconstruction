@@ -750,6 +750,13 @@ def reconstruct(event,max_cluster_size):
             optimised_d = d
             optimised_coords = combinations[ind]
 
+    #FLIP VECTOR SO IT POINTS UP!
+    #Just minor fix for now. In future, find average time of cluster in highest plate and compare with lowest hit plate to
+    #determine the vertical direction of a track.
+    
+    if optimised_d[2]  > 0:
+        optimised_d = np.multiply(optimised_d,-1)
+
     if residuals_current<max_residual:
         return optimised_centroid, optimised_d, optimised_coords, combinations, residuals_current
     else:
@@ -1353,7 +1360,7 @@ def plot_angle_distribution(angles, title):
     plt.legend()
     plt.grid(True)
     plt.show()
-    
+
 def extract_angles_phi_eta(filtered_events):
 
     #Input is filtered_events, output of ANT.filter_events() function

@@ -13,8 +13,6 @@ current_directory=  os.path.dirname(os.getcwd())
 
 def plotPhi(array, name, zrange = [0.01,200], unit='khz', time=60.):
     fig, ax = plt.subplots(1, figsize=(16, 8), dpi=100)
-    """ #lab = hep.atlas.label(com=False,data=True, label="Internal")
-    #lab[2].set_text("") """
     phichannels = [x-0.5 for x in range(65)]
     phiHist = ((np.array([array])/time).transpose(),np.array(phichannels),np.array([0,1]))
     thisHist = hep.hist2dplot(phiHist,norm=colors.LogNorm(zrange[0],zrange[1]))
@@ -29,8 +27,6 @@ def plotPhi(array, name, zrange = [0.01,200], unit='khz', time=60.):
 
 def plotEta(array, name, zrange = [0.01,200], unit='khz', time=60.):
     fig, ax = plt.subplots(1, figsize=(16, 8), dpi=100)
-    """ lab = hep.atlas.label(com=False,data=True, label="Internal")
-    lab[2].set_text("") """
     etachannels = [x-0.5 for x in range(33)]
     etaHist = (np.array([array])/time,np.array([0,1]),np.array(etachannels))
     thisHist = hep.hist2dplot(etaHist,norm=colors.LogNorm(zrange[0],zrange[1]))
