@@ -39,6 +39,7 @@ Tasklist:
 
      - Cannot exactly use the same "Tag and Probe" method outilned in the papers above. ProANUBIS triggers a readout whenever any 3 eta channels fire simultaneously within one window, so attempting to use reconstructed muons from these          events to test the efficiencies of the RPCs would greatly bias our efficiencies measurements.
      - Usually with "Tag and Probe" techniques, a decay near resonance is observed. Two decay products are produced, one acts as the "Tag" particle indicating a decay has occured. The expected path of the other decay product, the                "Probe", is then used to measure the efficiencies of detectors being studied.
+     - I have another way of doing this... stay tuned.
    
 - Look at new 3 hour runs data sets. Compare with 3Hours_24_3_1 dataset. Find efficiences etc.
 
