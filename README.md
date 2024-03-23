@@ -5,8 +5,17 @@ Functions necessary contained in ANUBIS_triggered_functions.py ("ANT") and anubi
 
 Relevant functions are located in ANUBIS_triggered_functions.py
 
-TODO:
-- Fix expected muon angular distribution. ✔ Done
+Tasklist:
+
+- Cluster events temporally and spatially. ✔ Done
+  
+- Reconstruct events. ✔ Done
+    - Used SVD and minimise residual on possible combos to find best trajectory.
+    - Sub-optimal: Still haven't accounted for uncertainties in hit coordinates,
+ 
+- Create event displays, channel hit_maps an 3D plots ✔ Done
+
+- Fix ProANUBIS muon zenith angle distribution. ✔ Done
 
 - Find eta and Phi angular distributions separtely. ✔ Done
   - As expected, the phi side showed symmetry in its angular distribution and the eta side showed asymmetry. Particularly eta side had a peak at around 50 degrees in one direction (this corresponds to a zenith angle of around 10 degrees).
