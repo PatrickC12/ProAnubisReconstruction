@@ -1,5 +1,8 @@
 # ProANUBIS Reconstruction
-Repository for scripts to analyse data and reconstruct events from ProAnubis at CERN.
+
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/882bb5bf-e9fa-4e4e-b864-c8545381508b)
+
+Repository for scripts to analyse data and reconstruct events from ProAnubis 2024 at CERN.
 
 Functions necessary contained in ANUBIS_triggered_functions.py ("ANT") and anubisPlotUtils.py. Folder called scripts contains current working build.
 
