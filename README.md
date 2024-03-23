@@ -26,3 +26,5 @@ TODO:
    https://iopscience.iop.org/article/10.1088/1748-0221/14/10/C10020/pdf
    
 -  Look at new 3 hour runs data sets. Compare with 3Hours_24_3_1 dataset. Find efficiences etc.
+
+- What are the gas mixtures used ?
