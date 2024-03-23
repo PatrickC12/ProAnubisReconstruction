@@ -19,5 +19,6 @@ TODO:
   
 -  Find efficiency of RPCs using "Tag and Probe" Method.
    https://espace.cern.ch/lip/pub/docs/LIP-STUDENTS-20-18.pdf
+   https://cms-opendata-workshop.github.io/workshop-lesson-tagandprobe/aio/index.html
    
 -  Look at new 3 hour runs data sets. Compare with 3Hours_24_3_1 dataset. Find efficiences etc.
