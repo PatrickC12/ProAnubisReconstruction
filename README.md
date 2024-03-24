@@ -1,6 +1,6 @@
 # ProANUBIS Reconstruction
 
-![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/882bb5bf-e9fa-4e4e-b864-c8545381508b)
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/06402d57-ecf8-4095-9aa8-93e6ff16fdb6)
 
 Repository for scripts to analyse data and reconstruct events from ProAnubis 2024 at CERN.
 
