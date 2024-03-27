@@ -24,7 +24,7 @@ Tasklist:
   - As expected, the phi side showed symmetry in its angular distribution and the eta side showed asymmetry. Particularly eta side had a peak at around 50 degrees in one direction (this corresponds to a zenith angle of around 10 degrees).
   - This agrees with the findings from the zenith angle distribution of all the muons. (See angular distributions ppt in "Investigations" folder)
   
--  Heat map of three hour run.
+-  Heat map of three hour run ✔ Done
 
 -  Timing between RPCs. Calibrate channels and RPCs for timing diff. (Find TOF From trajectory and find dT distributions).
 -  Also, find directionality of muon trajectory (vertical directionality) by considering average hit time for Top and Bottom hit RPCs. Trivial task, but at the momen not so important.
