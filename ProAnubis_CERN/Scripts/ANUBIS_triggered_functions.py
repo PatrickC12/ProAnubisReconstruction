@@ -750,7 +750,7 @@ def reconstruct(event,max_cluster_size):
             optimised_d = d
             optimised_coords = combinations[ind]
 
-    #FLIP VECTOR SO IT POINTS UP!
+    #FLIP VECTOR SO IT POINTS DOWN!
     #Just minor fix for now. In future, find average time of cluster in highest plate and compare with lowest hit plate to
     #determine the vertical direction of a track.
     
