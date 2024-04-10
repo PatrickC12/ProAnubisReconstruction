@@ -20,11 +20,16 @@ import plotly
 import plotly.graph_objs as go
 import plotly.express as px
 
+#ANUBIS Scripts
+
 current_directory=  os.path.dirname(os.getcwd())
+
+####FUNCTIONS ####
 
 #DATA READING
 
 def importFromTextFile(filename):
+    #Read raw data from ProANUBIS.
     inputText = open(filename)
     thisEvent = []
     data = [[] for tdc in range(5)]
@@ -40,6 +45,7 @@ def importFromTextFile(filename):
     return data
 
 def importFromHDF5File(filename):
+    #Read raw data from ProANUBIS.
     inputHDF5 = h5py.File(filename)
     thisEvent = []
     data = [[] for tdc in range(5)]
@@ -53,29 +59,13 @@ def importFromHDF5File(filename):
     return data
 
 def importDatafile(filename):
+    #Read raw data from ProANUBIS.
     if "txt" in filename.split(".")[-1]:
         return importFromTextFile(filename)
     elif "h5" in filename.split(".")[-1]:
         return importFromHDF5File(filename)
     else:
         print("File type not recognized. Expect .txt or .h5 input file.")
-
-def convertDataToHDF5(data, outfileName):
-    npformattedData = []
-    dt = np.dtype([('tdc', np.int_, 32), ('time', np.int_, 32),('data', np.ndarray)])
-    for event in range(len(data[0])):
-        for tdc in range(5):
-            thisArr = np.array(data[tdc][event],dtype=np.uint32)
-            thisPoint = (int(60928+tdc),int(0),thisArr)
-            npformattedData.append(thisPoint)
-    h5formattedData = np.array(npformattedData,dtype=dt)
-    hf = h5py.File(outfileName+'.h5', 'w')
-    #Read an input HDF5 file to get the right dtype. Does not work just trying to create an identical one - not sure what's missing
-    preMadeDtype = h5py.File(current_directory +'\ProAnubis_CERN\ProAnubisData\240224_2158_2m_trigTest2_Triggered_RAW.h5','r')['data'].dtype
-    dset = hf.create_dataset('data',(len(h5formattedData),),dtype=preMadeDtype)
-    for idx in range(len(h5formattedData)):
-        dset[idx] = h5formattedData[idx]
-    hf.close()
 
 def countChannels(events):
     #Expects events from one TDC, counts how many hits each channel has within the event list
@@ -89,97 +79,6 @@ def countChannels(events):
             except:
                 print(word>>24)
     return chanCounts
-
-def getEventTimes(events):
-    eventTimes = []
-    for event in events:
-        for word in event:
-            #Extract (local) time of hit (UNITS?)
-            eventTimes.append(word&0xfffff)
-    return eventTimes
-
-def makeSingleLayer(data, name):
-    #Heatmap plot of one RPC layer. Takes already-split heat map, used by event display
-    fig, ax = plt.subplots(1, figsize=(16, 8), dpi=100)
-    channels= [x-0.5 for x in range(len(data)+1)]
-    if(len(data)==32):
-        histArr = (np.array([data]),np.array([0,1]),np.array(channels))
-    else:
-        histArr = ((np.array([data])).transpose(),np.array(channels),np.array([0,1]))
-    thisHist = hep.hist2dplot(histArr,norm=colors.LogNorm(0.1,2))
-    thisHist.cbar.remove()
-    if(len(data)==32):
-        plt.ylim(len(data)-0.5,-0.5)
-    plt.ylabel(" ")
-    plt.xlabel(" ")
-    #plt.title(name)
-    
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
-    fig.tight_layout()
-    plt.savefig(current_directory+"\ProAnubis_CERN\Figures"+name+".png")
-    return current_directory+"\ProAnubis_CERN\Figures"+name+".png"
-
-def stackAndConvert(images, name="testDisplay"):
-    #PIL hacking to distort images and put them together to make a primitive replication of the detector
-    img = Image.open(images[0])
-    total_width = 3*img.size[0]
-    max_height = int(4*img.size[1])
-    new_im = Image.new('RGB', (total_width, max_height))
-    newData = new_im.load()
-    x_offset = 0
-    y_offset = 6*int(max_height/8.)
-    for y in range(max_height):
-        for x in range(total_width):
-            #newData forms the background of the image, need to set it to all-white to start. Probably some better way to do this?
-            newData[x, y] = (255, 255, 255)
-    for idx, image in enumerate(images):
-        img = Image.open(image)
-        img = img.convert("RGBA")
-        temp_im = Image.new('RGBA', (3*img.size[0], img.size[1]))
-        temp_im.paste(img, (int(img.size[0]/2.),0))
-        temp_im = temp_im.transform(temp_im.size, Image.AFFINE, (0.5, 1., 0, 0, 1, 0))
-        pixdata = temp_im.load()
-        width, height = temp_im.size
-        for y in range(height):
-            for x in range(width):
-                if pixdata[x, y] == (255, 255, 255, 255):
-                    #Manually make any white pixel transparent so that they can stack together nicely.
-                    pixdata[x, y] = (255, 255, 255, 0)
-        new_im.paste(temp_im, (0, y_offset), temp_im)
-        y_offset = y_offset-int(max_height/28.)
-        if idx == 5 or count==7:
-            #Counts from the bottom up, want bigger gaps between the different chambers
-            y_offset = y_offset-5*int(max_height/28.)                   
-    new_im.save(current_directory+"\ProAnubis_CERN\Figures"+name+".png"+name.strip(" ")+".png", "PNG")
-
-def makeEventDisplay(eventData,name):
-    #Expects a single event, divided as [tdc0,tdc2,...,tdc4]
-    countOne = countChannels([eventData[0]])
-    countTwo = countChannels([eventData[1]])
-    countThree = countChannels([eventData[2]])
-    countFour = countChannels([eventData[3]])
-    countFive = countChannels([eventData[4]])
-    singEventPlots = []
-    singEventPlots.append(makeSingleLayer(countOne[0:32],"Eta Triplet Low, Three Coincidences Required"))
-    singEventPlots.append(makeSingleLayer(countOne[32:96],"Phi Triplet Low, Three Coincidences Required"))
-    singEventPlots.append(makeSingleLayer(countOne[96:128],"Eta Triplet Mid, Three Coincidences Required"))
-    singEventPlots.append(makeSingleLayer(countTwo[0:64],"Phi Triplet Mid, Three Coincidences Required"))
-    singEventPlots.append(makeSingleLayer(countTwo[64:96],"Eta Triplet Top, Three Coincidences Required"))
-    singEventPlots.append(makeSingleLayer(countTwo[96:128]+countThree[0:32],"Phi Triplet Top, Three Coincidences Required"))
-    singEventPlots.append(makeSingleLayer(countThree[32:64],"Eta Singlet, Three Coincidences Required"))
-    singEventPlots.append(makeSingleLayer(countThree[64:128],"Phi Singlet, Three Coincidences Required"))
-    singEventPlots.append(makeSingleLayer(countFour[0:32],"Eta Doublet Low, Three Coincidences Required"))
-    singEventPlots.append(makeSingleLayer(countFour[32:96],"Phi Doublet Low, Three Coincidences Required"))
-    singEventPlots.append(makeSingleLayer(countFour[96:128],"Eta Doublet Top, Three Coincidences Required"))
-    singEventPlots.append(makeSingleLayer(countFive[0:64],"Phi Doublet Top, Three Coincidences Required"))
-    stackAndConvert(singEventPlots,name)
-    for plot in singEventPlots:
-        #Remove all the temporary plots. There's probably a better way to move pil images around than making and deleting .png files.
-        os.remove(plot)
-
-def GetEvent(eventData, num):
-    return [eventData[0][num],eventData[1][num],eventData[2][num],eventData[3][num],eventData[4][num]] 
 
 #DATA PROCESSING
 
@@ -382,6 +281,7 @@ def FindCoincidentHits(etaHits,phiHits,time_window):
                     
             t+= 1
 
+    #OUT: coicident_hits = [["Event X",TIME_IN_EVENT,[[RPC,CHANNEL,HITTIME,"Eta/Phi"],...]]]
     return coincident_hits
 
 def dark_clustering(dark_coincidence, anomalous_cutoff =10):
@@ -466,7 +366,7 @@ def dark_clustering(dark_coincidence, anomalous_cutoff =10):
     return all_rpc_eta_clusters,all_rpc_phi_clusters,phi_cluster_distribution,eta_cluster_distribution,anomalous_clusters
 
 def cluster(coincident_hits):
-#Entries into coincident_hits have already undergone temporal clustering.
+    # Coincident_hits is temporally clustered data outputted from FindCoincidenceHits
     # Now will undergo spatial clustering.
 
     coincident_hits_clustered = []
@@ -535,6 +435,12 @@ def cluster(coincident_hits):
 
         coincident_hits_clustered.append(coincident_event_clustered)
 
+    #Elements of coincident_hits_clustered look like:
+
+    # event = ['Event x',TIMEBIN, [[[RPC1_PHI_CLUSTERS],[RPC1_ETA_CLUSTERS]],[[...],[...]],...]
+
+    # e.g. [RPC_1_PHI_CLUSTERS] = [[0, 20, 239, 'phi'],...] ; RPC#, CHANNEL#, HITTIME_ns, "Phi/eta"
+
     return coincident_hits_clustered
 
 def check_event_attributes(event,min_chamber_number,min_RPC_number):
@@ -596,7 +502,6 @@ def extract_coords(event,max_cluster_size):
     # event = ['Event x',TIMEBIN, [[[RPC1_PHI_CLUSTERS],[RPC1_ETA_CLUSTERS]],[[...],[...]],...]
 
     #Extract x and y coords of cluster in event
-    RPC_heights = [0.6,1.8,3.0,61.8,121.8,123] #Heights of middle point of each RPC, measured from the bottom of the Triplet Low RPC. Units are cm.
     distance_per_phi_channel = 2.7625 #cm
     distance_per_eta_channel = 2.9844 #cm
     
@@ -763,13 +668,6 @@ def reconstruct(event,max_cluster_size):
         print("Failed to reconstruct")
         #return optimised_centroid, optimised_d, optimised_coords, combinations, residuals_current
         return None
-
-def line_equation(t, a, b, c, x0, y0, z0):
-    # Define the parametric equation of the line
-    x = x0 + a*t
-    y = y0 + b*t
-    z = z0 + c*t
-    return x, y, z
 
 def non_interactive_muon_plot(centroid,d,event_coords):
     #Coefficients = [a,b,c]
@@ -985,6 +883,86 @@ def calculate_cuboid_vertices(origin, dimensions):
     return vertices
 
 #PLOTTING FUNCTIONS
+
+def makeSingleLayer(data, name):
+    #Heatmap plot of one RPC layer. Takes already-split heat map, used by event display
+    fig, ax = plt.subplots(1, figsize=(16, 8), dpi=100)
+    channels= [x-0.5 for x in range(len(data)+1)]
+    if(len(data)==32):
+        histArr = (np.array([data]),np.array([0,1]),np.array(channels))
+    else:
+        histArr = ((np.array([data])).transpose(),np.array(channels),np.array([0,1]))
+    thisHist = hep.hist2dplot(histArr,norm=colors.LogNorm(0.1,2))
+    thisHist.cbar.remove()
+    if(len(data)==32):
+        plt.ylim(len(data)-0.5,-0.5)
+    plt.ylabel(" ")
+    plt.xlabel(" ")
+    #plt.title(name)
+    
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+    fig.tight_layout()
+    plt.savefig(current_directory+"\ProAnubis_CERN\Figures"+name+".png")
+    return current_directory+"\ProAnubis_CERN\Figures"+name+".png"
+
+def stackAndConvert(images, name="testDisplay"):
+    #PIL hacking to distort images and put them together to make a primitive replication of the detector
+    img = Image.open(images[0])
+    total_width = 3*img.size[0]
+    max_height = int(4*img.size[1])
+    new_im = Image.new('RGB', (total_width, max_height))
+    newData = new_im.load()
+    x_offset = 0
+    y_offset = 6*int(max_height/8.)
+    for y in range(max_height):
+        for x in range(total_width):
+            #newData forms the background of the image, need to set it to all-white to start. Probably some better way to do this?
+            newData[x, y] = (255, 255, 255)
+    for idx, image in enumerate(images):
+        img = Image.open(image)
+        img = img.convert("RGBA")
+        temp_im = Image.new('RGBA', (3*img.size[0], img.size[1]))
+        temp_im.paste(img, (int(img.size[0]/2.),0))
+        temp_im = temp_im.transform(temp_im.size, Image.AFFINE, (0.5, 1., 0, 0, 1, 0))
+        pixdata = temp_im.load()
+        width, height = temp_im.size
+        for y in range(height):
+            for x in range(width):
+                if pixdata[x, y] == (255, 255, 255, 255):
+                    #Manually make any white pixel transparent so that they can stack together nicely.
+                    pixdata[x, y] = (255, 255, 255, 0)
+        new_im.paste(temp_im, (0, y_offset), temp_im)
+        y_offset = y_offset-int(max_height/28.)
+        if idx == 5 or count==7:
+            #Counts from the bottom up, want bigger gaps between the different chambers
+            y_offset = y_offset-5*int(max_height/28.)                   
+    new_im.save(current_directory+"\ProAnubis_CERN\Figures"+name+".png"+name.strip(" ")+".png", "PNG")
+
+def makeEventDisplay(eventData,name):
+    #Expects a single event, divided as [tdc0,tdc2,...,tdc4]
+    countOne = countChannels([eventData[0]])
+    countTwo = countChannels([eventData[1]])
+    countThree = countChannels([eventData[2]])
+    countFour = countChannels([eventData[3]])
+    countFive = countChannels([eventData[4]])
+    singEventPlots = []
+    singEventPlots.append(makeSingleLayer(countOne[0:32],"Eta Triplet Low, Three Coincidences Required"))
+    singEventPlots.append(makeSingleLayer(countOne[32:96],"Phi Triplet Low, Three Coincidences Required"))
+    singEventPlots.append(makeSingleLayer(countOne[96:128],"Eta Triplet Mid, Three Coincidences Required"))
+    singEventPlots.append(makeSingleLayer(countTwo[0:64],"Phi Triplet Mid, Three Coincidences Required"))
+    singEventPlots.append(makeSingleLayer(countTwo[64:96],"Eta Triplet Top, Three Coincidences Required"))
+    singEventPlots.append(makeSingleLayer(countTwo[96:128]+countThree[0:32],"Phi Triplet Top, Three Coincidences Required"))
+    singEventPlots.append(makeSingleLayer(countThree[32:64],"Eta Singlet, Three Coincidences Required"))
+    singEventPlots.append(makeSingleLayer(countThree[64:128],"Phi Singlet, Three Coincidences Required"))
+    singEventPlots.append(makeSingleLayer(countFour[0:32],"Eta Doublet Low, Three Coincidences Required"))
+    singEventPlots.append(makeSingleLayer(countFour[32:96],"Phi Doublet Low, Three Coincidences Required"))
+    singEventPlots.append(makeSingleLayer(countFour[96:128],"Eta Doublet Top, Three Coincidences Required"))
+    singEventPlots.append(makeSingleLayer(countFive[0:64],"Phi Doublet Top, Three Coincidences Required"))
+    stackAndConvert(singEventPlots,name)
+    for plot in singEventPlots:
+        #Remove all the temporary plots. There's probably a better way to move pil images around than making and deleting .png files.
+        os.remove(plot)
 
 def plot_dark_clustering(phi_cluster_distribution,eta_cluster_distribution, time ="60 Seconds"):
     
@@ -1413,3 +1391,42 @@ def extract_angles_phi_eta(filtered_events):
         #Project direction vector onto planes to work out phi and eta angular distributions. Should be no assymmetry in phi.
         #Expect asymmetry in eta. 
 
+
+
+#Deprecated
+
+def line_equation(t, a, b, c, x0, y0, z0):
+    # Define the parametric equation of the line
+    x = x0 + a*t
+    y = y0 + b*t
+    z = z0 + c*t
+    return x, y, z
+
+def convertDataToHDF5(data, outfileName):
+    npformattedData = []
+    dt = np.dtype([('tdc', np.int_, 32), ('time', np.int_, 32),('data', np.ndarray)])
+    for event in range(len(data[0])):
+        for tdc in range(5):
+            thisArr = np.array(data[tdc][event],dtype=np.uint32)
+            thisPoint = (int(60928+tdc),int(0),thisArr)
+            npformattedData.append(thisPoint)
+    h5formattedData = np.array(npformattedData,dtype=dt)
+    hf = h5py.File(outfileName+'.h5', 'w')
+    #Read an input HDF5 file to get the right dtype. Does not work just trying to create an identical one - not sure what's missing
+    preMadeDtype = h5py.File(current_directory +'\ProAnubis_CERN\ProAnubisData\240224_2158_2m_trigTest2_Triggered_RAW.h5','r')['data'].dtype
+    dset = hf.create_dataset('data',(len(h5formattedData),),dtype=preMadeDtype)
+    for idx in range(len(h5formattedData)):
+        dset[idx] = h5formattedData[idx]
+    hf.close()
+
+def getEventTimes(events):
+    
+    eventTimes = []
+    for event in events:
+        for word in event:
+            #Extract (local) time of hit (UNITS?)
+            eventTimes.append(word&0xfffff)
+    return eventTimes
+
+def GetEvent(eventData, num):
+    return [eventData[0][num],eventData[1][num],eventData[2][num],eventData[3][num],eventData[4][num]] 
