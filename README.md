@@ -42,6 +42,7 @@ Tasklist:
      - I have another way of doing this... stay tuned.
    
 - Looking at angular distributions during ATLAS Luminosity events on 03/04/24 ✔ Done
+     - See if timing information can be used to determine direction of trajectory. 
 
 - Gas mixtures in ProANUBIS:
     - 95% Freon
