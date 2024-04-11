@@ -12,7 +12,7 @@ matplotlib.use('TkAgg')  # or 'Qt5Agg', 'GTK3Agg', etc.
 import mplhep as hep
 hep.style.use([hep.style.ATLAS])
 import sys
-import ANUBIS_triggered_functions as ANT
+import ANUBIS_triggered_functions as ANT #Recursive...
 import pandas as pd
 import matplotlib.backends.backend_pdf
 from matplotlib.ticker import MultipleLocator
@@ -20,7 +20,12 @@ import plotly
 import plotly.graph_objs as go
 import plotly.express as px
 
-#ANUBIS Scripts
+# if Functions labelled MR:
+#   written previously by Dr Michael Revering.
+# else:
+#    Patrick
+
+#ANUBIS SCRIPTS
 
 current_directory=  os.path.dirname(os.getcwd())
 
@@ -29,6 +34,7 @@ current_directory=  os.path.dirname(os.getcwd())
 #DATA READING
 
 def importFromTextFile(filename):
+    #MR
     #Read raw data from ProANUBIS.
     inputText = open(filename)
     thisEvent = []
@@ -45,6 +51,7 @@ def importFromTextFile(filename):
     return data
 
 def importFromHDF5File(filename):
+    #MR
     #Read raw data from ProANUBIS.
     inputHDF5 = h5py.File(filename)
     thisEvent = []
@@ -59,6 +66,7 @@ def importFromHDF5File(filename):
     return data
 
 def importDatafile(filename):
+    #MR
     #Read raw data from ProANUBIS.
     if "txt" in filename.split(".")[-1]:
         return importFromTextFile(filename)
@@ -68,6 +76,7 @@ def importDatafile(filename):
         print("File type not recognized. Expect .txt or .h5 input file.")
 
 def countChannels(events):
+    #MR
     #Expects events from one TDC, counts how many hits each channel has within the event list
     chanCounts = [0 for x in range(128)]
     for event in events:
@@ -82,97 +91,6 @@ def countChannels(events):
 
 #DATA PROCESSING
 
-def divideHitCountsByRPC(data):
-    #Divides the number of hits in each channel into individual RPCs
-    etaHits = [[],[],[],[],[],[]]
-    phiHits = [[],[],[],[],[],[]]
-    # i=0
-    for event in range(0,len(data[0])):
-        tdcCounts = [countChannels([data[tdc][event]]) for tdc in range(5)]
-        # i+=1
-        # print(i)
-        etaHits[0].append(tdcCounts[0][0:32]) #Triplet Eta Low
-        phiHits[0].append(tdcCounts[0][32:96]) #Triplet Phi low
-        etaHits[1].append(tdcCounts[0][96:128]) #Triplet Eta Mid
-        phiHits[1].append(tdcCounts[1][0:64]) #Triplet Phi Mid
-        etaHits[2].append(tdcCounts[1][64:96]) #Triplet Eta Top
-        phiHits[2].append(tdcCounts[1][96:128]+tdcCounts[2][0:32]) #Triplet Phi Top
-        etaHits[3].append(tdcCounts[2][32:64])#Singlet Eta
-        phiHits[3].append(tdcCounts[2][64:128])#Singlet Phi
-        etaHits[4].append(tdcCounts[3][0:32])#Double Eta low
-        phiHits[4].append(tdcCounts[3][32:96])#Double Phi Low
-        etaHits[5].append(tdcCounts[3][96:128])#Doublet Eta top
-        phiHits[5].append(tdcCounts[4][0:64])#Doublet Phi top
-    return etaHits,phiHits
-
-def divideEventsByRPC(data):
-    #Divides the data into individual RPCs, preserving the initial words within each event
-    splitEvents = []
-    for event in range(len(data[0])):
-        thisEvent = [[] for rpc in range(12)]
-        for tdc in range(5):
-            for word in data[tdc][event]:
-                chan = word>>24
-                if(tdc==0):
-                    if(chan<32):
-                        #Triplet Eta Low
-                        thisEvent[0].append(word)
-                    elif(chan<96):
-                        #Triplet Phi Low
-                        thisEvent[1].append(word)
-                    else:
-                        #Triplet Eta Mid
-                        thisEvent[2].append(word)
-                elif(tdc==1):
-                    if(chan<64):
-                        #Triplet Phi Mid
-                        thisEvent[3].append(word)
-                    elif(chan<96):
-                        #Triplet Eta Top
-                        thisEvent[4].append(word)
-                    else:
-                        #Triplet Phi 1 Top
-                        thisEvent[5].append(word)
-                elif(tdc==2):
-                    if(chan<32):
-                        #Triplet Phi 2 Top, this seems wrong too. This should be stored in index 5 not 6. Relabelled to 5
-                        thisEvent[5].append(word)
-                    elif(chan<64):
-                        #Singlet Eta, Relabelled from 7 to 6.
-                        thisEvent[6].append(word)
-                    else:
-                        #Singlet Phi, Relabelled from 8 to 7
-                        thisEvent[7].append(word)   
-                elif(tdc==3):
-                    if(chan<32):
-                        #Doublet Eta Low This seems wrong, why are we currently storing Doublet Eta Low and Singlet Phi in the same index 8? Relabbeld Singlet Phi index, should be fixed.
-                        thisEvent[8].append(word)
-                    elif(chan<96):
-                        #Doublet Phi Low, This seems wrong, Doublet Phi low spans to 96 channel. Changed from 64 to 96.
-                        thisEvent[9].append(word)
-                    else:
-                        thisEvent[10].append(word)                
-                elif(tdc==4):
-                    #Doublet Phi Top
-                    thisEvent[11].append(word)
-        splitEvents.append(thisEvent)
-    return splitEvents
-
-def countCoincidences(primRpc,SecRpc, winSize=5, minHit=3, maxHit=10):
-    #Count events where at least minHit channels have an RPC hit within winSize of each channel, while the primary and secondary RPC has more than minHit and less than maxHit to filter noise events
-    #Uses the pre-made hit counts instead of the event words directly
-    coincArray = [0 for channel in range(len(primRpc[0]))]
-    for idx, event in enumerate(primRpc):
-        for channel in range(len(event)):
-            nHits = 0
-            for itr in range(channel-int(winSize/2.), channel+int(winSize/2.)+1):
-                if itr>=0 and itr<len(event):
-                    if event[channel]>0:
-                        nHits = nHits+1
-            if nHits>=minHit and sum(event)<=maxHit:
-                if sum(SecRpc[idx])>=minHit and sum(SecRpc[idx])<=maxHit:
-                    coincArray[channel]=coincArray[channel]+1
-    return coincArray
 
 def countChannels_Timed(events):
     #Expects events from one TDC, counts how many hits each channel has within the event list
@@ -665,7 +583,7 @@ def reconstruct(event,max_cluster_size):
     if residuals_current<max_residual:
         return optimised_centroid, optimised_d, optimised_coords, combinations, residuals_current
     else:
-        print("Failed to reconstruct")
+        print("Failed to reconstruct, residuals too large")
         #return optimised_centroid, optimised_d, optimised_coords, combinations, residuals_current
         return None
 
@@ -882,9 +800,220 @@ def calculate_cuboid_vertices(origin, dimensions):
 
     return vertices
 
+#Reconstruction, with timing of RPC hit taken into account in trajectory.
+
+def extract_coords_timed(event,max_cluster_size):
+
+    #This function converts spatially clusters in RPCs into x and y coordinates (z given by RPC number)
+    # event = ['Event x',TIMEBIN, [[[RPC1_PHI_CLUSTERS],[RPC1_ETA_CLUSTERS]],[[...],[...]],...]
+
+    #Extract x and y coords of cluster in event
+    distance_per_phi_channel = 2.7625 #cm
+    distance_per_eta_channel = 2.9844 #cm
+    
+    coords = []
+
+    for RPC in range(6):
+        
+        x_clusters = [x for x in event[2][RPC][0] if len(x)<=max_cluster_size] #phi direction
+        y_clusters = [y for y in event[2][RPC][1] if len(y)<=max_cluster_size] #eta direction
+
+        #Finding size of largest cluster, consider coordinates bad if largest cluster is larger than 6.
+        x_clusters_lengths = [len(x) for x in event[2][RPC][0]]
+        y_clusters_lengths = [len(y) for y in event[2][RPC][1]]
+
+        max_length = max(max(x_clusters_lengths, default=0), max(y_clusters_lengths, default=0))
+
+        x_coords = []
+        y_coords = []
+
+        for x_cluster in x_clusters:
+           #x_cluster = [[RPC,CHANNEL,TIME,'phi'],...]
+            phi_channels = [x[1] for x in x_cluster]
+            phi_times = [t[2] for t in x_cluster]
+
+            if phi_channels:
+                avg_time = np.average(phi_times)
+
+            #Convert the channel number into a measurement along the RPC.
+            x_values = [(phi_channel+0.5)*distance_per_phi_channel for phi_channel in phi_channels]
+            x_coords.append(np.mean(x_values))
+            #x_error
+
+        for y_cluster in y_clusters:
+            #y_cluster = [[RPC,CHANNEL,TIME,'eta'],...]
+            eta_channels_corrected = [31-y[1] for y in y_cluster] #corrected for labelling from 0 to 31.
+            y_values = [(channel_num+0.5)*distance_per_eta_channel for channel_num in eta_channels_corrected]
+            y_coords.append(np.mean(y_values))
+            #x_error
+
+        if x_coords and y_coords and max_length<6:
+            coords.append([x_coords, y_coords,avg_time])
+        else:
+            coords.append([[],[],"N"])
+    
+    #RPC_coords = [x_coords,y_coords,avg_time on phi side hits]
+
+    #coords = [[RPC1_coords],[RPC2_coords],[RPC3_coords],...]
+    return(coords)
+
+def extract_DT(coords):
+    #coords = [[RPC1_coords],[RPC2_coords],[RPC3_coords],...]
+    #RPC_coords = [x_coords,y_coords,avg_time on phi side hits]
+
+    times = [[RPC,x[2]] for RPC, x in enumerate(coords) if isinstance(x[2], (float, int))]
+
+    #Should already be sorted, but just in case.
+    #Sort times by RPC, with RPC at lowest height at first entry.
+
+    if len(times) > 1:
+
+        times_sorted = sorted(times, key=lambda x: x[0])
+
+        #print(times_sorted)
+
+        dT = times_sorted[-1][1]-times_sorted[0][1]
+        #if dT>0 this implies the particles hit the higher RPC after the lower one, so the particle is travelling upwards here.
+        #Vice-versa for dT < 0 
+
+        return dT
+    else:
+        pass
+
+def reconstruct_timed(event,max_cluster_size):
+
+    #timed tag indicates that timing information from RPC is used to determine direction of vertical transversal of "particle" in the event.
+
+    max_residual = 100
+
+    # event = ['Event x',TIMEBIN, [[[RPC1_PHI_CLUSTERS],[RPC1_ETA_CLUSTERS]],[[...],[...]],...]
+    RPC_heights = [0.6,1.8,3.0,61.8,121.8,123] #Heights of middle point of each RPC, measured from the bottom of the Triplet Low RPC. Units are cm.
+
+    #Extract x and y coords of cluster in event
+
+    coords = extract_coords_timed(event,max_cluster_size)
+
+    dT = extract_DT(coords)
+
+    if dT is None:
+        print("Failed to reconstruct, dT is NoneType")
+        return None
+
+    # Count the number of empty RPCs
+    empty_RPC_count = sum(1 for item in coords if item == [[], [],'N'])
+
+    # If less than 3 elements of coords are occupied, exit the function
+    if empty_RPC_count > 3:
+        print("Failed to reconstruct, not enough coords")
+        return None  # Exit the function
+
+    #ITERATING OVER EVERY POSSIBLE COMBINATION OF x,y,z over all 3 RPCs (limited to one x,y per RPC).
+    #Doesn't look particularly nice, but there are not many coordinates to loop over usually....
+
+    combinations = ANT.generate_hit_coords_combo(coords,RPC_heights)
+
+    #Now for each combo in combinations, attempt to reconstruct a path. See which one gives the best trajectory.
+
+    #If success, print parameters of fitting function.
+    #If fail, print reconstruction failed.
+
+    residuals_current = np.inf
+    optimised_coords = None
+    optimised_d= None
+    optimised_centroid= None
+
+    for ind,combo in enumerate(combinations):
+
+        centroid, d, residuals = ANT.fit_event(combo)
+        if residuals < residuals_current:
+
+            # If new fit is better than old then replace old fit.
+            residuals_current = residuals
+            optimised_centroid = centroid
+            optimised_d = d
+            optimised_coords = combinations[ind]
+
+    #if dT>0 this implies the particles hit the higher RPC after the lower one, so the particle is travelling upwards here.
+    #Vice-versa for dT < 0.
+
+    #dT = 0 case?
+    
+    if dT > 0:
+        if optimised_d[2] < 0:
+            optimised_d = np.multiply(optimised_d,-1)
+    else:
+        if optimised_d[2] > 0:
+            optimised_d = np.multiply(optimised_d,-1)
+
+    if residuals_current<max_residual:
+        return optimised_centroid, optimised_d, optimised_coords, combinations, residuals_current, dT
+    else:
+        print("Failed to reconstruct, residuals too large")
+        #return optimised_centroid, optimised_d, optimised_coords, combinations, residuals_current
+        return None
+
+def extract_angles_phi_eta_timed(filtered_events):
+
+    #Input is filtered_events, output of ANT.filter_events() function
+
+    angles_eta = []
+    angles_phi = []
+    delta_times = []
+
+    for i,filtered_event in enumerate(filtered_events):
+
+        result = reconstruct_timed(filtered_event,3)
+
+        if result is None:
+            print(f"Index= {i}")
+
+        if result is not None:
+
+            delta_times.append(result[5])
+            #Only save angles that actually were reconstructed well
+            
+            # a.b = |a||b|cos(x)
+
+            #eta angle. 
+            #work out the projection of the direction vector in the plane.
+            
+            v_parr_eta = np.array([0,result[1][1],result[1][2]])
+
+            theta_eta = np.arccos(np.dot(v_parr_eta,[0,0,1]) / np.linalg.norm(v_parr_eta))
+
+            if theta_eta > np.pi / 2:
+                theta_eta= np.pi - theta_eta
+            
+            if v_parr_eta[1] > 0:
+                theta_eta*=-1
+
+            angles_eta.append(theta_eta)
+
+            # Phi angles
+            #work out the projection of the direction vector in the plane.
+            
+            v_parr_phi = np.array([result[1][0],0,result[1][2]])
+
+            theta_phi = np.arccos(np.dot(v_parr_phi,[0,0,1]) / np.linalg.norm(v_parr_phi))
+
+            if theta_phi > np.pi / 2:
+                theta_phi= np.pi - theta_phi
+            
+            if v_parr_phi[0] < 0:
+                theta_phi*=-1
+
+            angles_phi.append(theta_phi)
+
+    return angles_eta, angles_phi, delta_times
+
+        #ProAnubis setup is at 45 degrees to vertical. 
+        #Project direction vector onto planes to work out phi and eta angular distributions. Should be no assymmetry in phi.
+        #Expect asymmetry in eta. 
+
 #PLOTTING FUNCTIONS
 
 def makeSingleLayer(data, name):
+    #MR
     #Heatmap plot of one RPC layer. Takes already-split heat map, used by event display
     fig, ax = plt.subplots(1, figsize=(16, 8), dpi=100)
     channels= [x-0.5 for x in range(len(data)+1)]
@@ -907,6 +1036,7 @@ def makeSingleLayer(data, name):
     return current_directory+"\ProAnubis_CERN\Figures"+name+".png"
 
 def stackAndConvert(images, name="testDisplay"):
+    #MR
     #PIL hacking to distort images and put them together to make a primitive replication of the detector
     img = Image.open(images[0])
     total_width = 3*img.size[0]
@@ -940,6 +1070,7 @@ def stackAndConvert(images, name="testDisplay"):
     new_im.save(current_directory+"\ProAnubis_CERN\Figures"+name+".png"+name.strip(" ")+".png", "PNG")
 
 def makeEventDisplay(eventData,name):
+    #MR
     #Expects a single event, divided as [tdc0,tdc2,...,tdc4]
     countOne = countChannels([eventData[0]])
     countTwo = countChannels([eventData[1]])
@@ -1173,6 +1304,7 @@ def plot_event_cluster_save(event_cluster):
         os.remove(plot)
 
 def combinePlots(plots,imname):
+    #MR
     images = [Image.open(x) for x in plots]
     widths, heights = zip(*(i.size for i in images))
 
@@ -1201,6 +1333,7 @@ def combinePlots(plots,imname):
     new_im.save(imname.strip(" ")+'.pdf')
 
 def heatFromFile(dataFile, time=240, name="HeatMap"):
+    #MR
     #Plots heat maps from triggered data, showing the hit rate in each rpc channel. 2D plots designed to replicate RPC layout and channel counting direction.
     thisData = importDatafile(dataFile)
     thisHitData = {}
@@ -1350,6 +1483,9 @@ def extract_angles_phi_eta(filtered_events):
 
         result = reconstruct(filtered_event,3)
 
+        if result is None:
+            print(f"Index= {i}")
+
         if result is not None:
             #Only save angles that actually were reconstructed well
             
@@ -1391,7 +1527,31 @@ def extract_angles_phi_eta(filtered_events):
         #Project direction vector onto planes to work out phi and eta angular distributions. Should be no assymmetry in phi.
         #Expect asymmetry in eta. 
 
+def plot_angle_distribution_absolute(angles, title):
+    #Plot angular distribution given phi and eta angular distribution separately.
+    #Plot absolute number of counts rather than relative occurence.
 
+    plt.figure(figsize=(16,10))
+
+    # Plot histogram with counts
+    plt.hist(angles, bins=61, density=False,edgecolor='black',alpha=0.7, label='ProANUBIS muon distribution')
+
+    # Convert radians to degrees for x-ticks
+    x_ticks_degrees = np.linspace(-90, 90, num=19)
+    x_ticks_radians = np.radians(x_ticks_degrees)
+
+    # Set x-ticks labels and positions
+    plt.xticks(x_ticks_radians, x_ticks_degrees)
+    
+    plt.annotate(f"Number of events = {len(angles)}",(0.2,0.6),xycoords='figure fraction')
+
+    # Customize the plot
+    plt.xlabel('Angle/ degrees from axis perpendicular to surface of RPCs')
+    plt.ylabel('Number of Counts')
+    plt.title(title)
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 #Deprecated
 
@@ -1403,6 +1563,7 @@ def line_equation(t, a, b, c, x0, y0, z0):
     return x, y, z
 
 def convertDataToHDF5(data, outfileName):
+    #MR
     npformattedData = []
     dt = np.dtype([('tdc', np.int_, 32), ('time', np.int_, 32),('data', np.ndarray)])
     for event in range(len(data[0])):
@@ -1420,6 +1581,7 @@ def convertDataToHDF5(data, outfileName):
     hf.close()
 
 def getEventTimes(events):
+    #MR
     
     eventTimes = []
     for event in events:
@@ -1429,4 +1591,100 @@ def getEventTimes(events):
     return eventTimes
 
 def GetEvent(eventData, num):
+    #MR
     return [eventData[0][num],eventData[1][num],eventData[2][num],eventData[3][num],eventData[4][num]] 
+
+def divideHitCountsByRPC(data):
+    #MR
+    #Divides the number of hits in each channel into individual RPCs
+    etaHits = [[],[],[],[],[],[]]
+    phiHits = [[],[],[],[],[],[]]
+    # i=0
+    for event in range(0,len(data[0])):
+        tdcCounts = [countChannels([data[tdc][event]]) for tdc in range(5)]
+        # i+=1
+        # print(i)
+        etaHits[0].append(tdcCounts[0][0:32]) #Triplet Eta Low
+        phiHits[0].append(tdcCounts[0][32:96]) #Triplet Phi low
+        etaHits[1].append(tdcCounts[0][96:128]) #Triplet Eta Mid
+        phiHits[1].append(tdcCounts[1][0:64]) #Triplet Phi Mid
+        etaHits[2].append(tdcCounts[1][64:96]) #Triplet Eta Top
+        phiHits[2].append(tdcCounts[1][96:128]+tdcCounts[2][0:32]) #Triplet Phi Top
+        etaHits[3].append(tdcCounts[2][32:64])#Singlet Eta
+        phiHits[3].append(tdcCounts[2][64:128])#Singlet Phi
+        etaHits[4].append(tdcCounts[3][0:32])#Double Eta low
+        phiHits[4].append(tdcCounts[3][32:96])#Double Phi Low
+        etaHits[5].append(tdcCounts[3][96:128])#Doublet Eta top
+        phiHits[5].append(tdcCounts[4][0:64])#Doublet Phi top
+    return etaHits,phiHits
+
+def divideEventsByRPC(data):
+    #MR
+    #Divides the data into individual RPCs, preserving the initial words within each event
+    splitEvents = []
+    for event in range(len(data[0])):
+        thisEvent = [[] for rpc in range(12)]
+        for tdc in range(5):
+            for word in data[tdc][event]:
+                chan = word>>24
+                if(tdc==0):
+                    if(chan<32):
+                        #Triplet Eta Low
+                        thisEvent[0].append(word)
+                    elif(chan<96):
+                        #Triplet Phi Low
+                        thisEvent[1].append(word)
+                    else:
+                        #Triplet Eta Mid
+                        thisEvent[2].append(word)
+                elif(tdc==1):
+                    if(chan<64):
+                        #Triplet Phi Mid
+                        thisEvent[3].append(word)
+                    elif(chan<96):
+                        #Triplet Eta Top
+                        thisEvent[4].append(word)
+                    else:
+                        #Triplet Phi 1 Top
+                        thisEvent[5].append(word)
+                elif(tdc==2):
+                    if(chan<32):
+                        #Triplet Phi 2 Top, this seems wrong too. This should be stored in index 5 not 6. Relabelled to 5
+                        thisEvent[5].append(word)
+                    elif(chan<64):
+                        #Singlet Eta, Relabelled from 7 to 6.
+                        thisEvent[6].append(word)
+                    else:
+                        #Singlet Phi, Relabelled from 8 to 7
+                        thisEvent[7].append(word)   
+                elif(tdc==3):
+                    if(chan<32):
+                        #Doublet Eta Low This seems wrong, why are we currently storing Doublet Eta Low and Singlet Phi in the same index 8? Relabbeld Singlet Phi index, should be fixed.
+                        thisEvent[8].append(word)
+                    elif(chan<96):
+                        #Doublet Phi Low, This seems wrong, Doublet Phi low spans to 96 channel. Changed from 64 to 96.
+                        thisEvent[9].append(word)
+                    else:
+                        thisEvent[10].append(word)                
+                elif(tdc==4):
+                    #Doublet Phi Top
+                    thisEvent[11].append(word)
+        splitEvents.append(thisEvent)
+    return splitEvents
+
+def countCoincidences(primRpc,SecRpc, winSize=5, minHit=3, maxHit=10):
+    #MR
+    #Count events where at least minHit channels have an RPC hit within winSize of each channel, while the primary and secondary RPC has more than minHit and less than maxHit to filter noise events
+    #Uses the pre-made hit counts instead of the event words directly
+    coincArray = [0 for channel in range(len(primRpc[0]))]
+    for idx, event in enumerate(primRpc):
+        for channel in range(len(event)):
+            nHits = 0
+            for itr in range(channel-int(winSize/2.), channel+int(winSize/2.)+1):
+                if itr>=0 and itr<len(event):
+                    if event[channel]>0:
+                        nHits = nHits+1
+            if nHits>=minHit and sum(event)<=maxHit:
+                if sum(SecRpc[idx])>=minHit and sum(SecRpc[idx])<=maxHit:
+                    coincArray[channel]=coincArray[channel]+1
+    return coincArray
