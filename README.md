@@ -44,8 +44,10 @@ Tasklist:
      - Such efficiences measurements can be done in more earnest once LHC is running and muons passing through ATLAS muon spectrometer can be used as Tags to probe ProANUBIS.
    
 - Looking at angular distributions during ATLAS Luminosity events on 03/04/24 ✔ Done
-     - See if timing information can be used to determine direction of trajectory. 
-     - Plot timing difference between layers for hit.
+     - See if timing information can be used to determine direction of trajectory.  ✔ Done
+     - Plot timing difference between layers for hit. ✔ Done
+ 
+TODO: Would be nice to verify these angular distributions from simulation -> enjoy
 
 - Gas mixtures in ProANUBIS (check):
     - 95% Freon
