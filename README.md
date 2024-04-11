@@ -23,11 +23,11 @@ Tasklist:
 
 - Find eta and Phi angular distributions separtely. ✔ Done
   - As expected, the phi side showed symmetry in its angular distribution and the eta side showed asymmetry. Particularly eta side had a peak at around 50 degrees in one direction (this corresponds to a zenith angle of around 10 degrees).
-  - This agrees with the findings from the zenith angle distribution of all the muons. (See angular distributions ppt in "Investigations" folder)
+  - This agrees with the findings from the zenith angle distribution of all the muons.
   
 -  Heat map of three hour run
 
--  Timing between RPCs. Calibrate channels and RPCs for timing diff. (Find TOF From trajectory and find dT distributions).
+-  Timing between RPCs. Calibrate channels and RPCs for timing diff. (Find TOF From trajectory and find dT distributions). ✔ Done
 -  Also, find directionality of muon trajectory (vertical directionality) by considering average hit time for Top and Bottom hit RPCs. Trivial task, but at the moment not so important. ✔ Done
   
 -  Find efficiency of RPCs using "Tag and Probe" Method.
@@ -44,8 +44,10 @@ Tasklist:
      - Such efficiences measurements can be done in more earnest once LHC is running and muons passing through ATLAS muon spectrometer can be used as Tags to probe ProANUBIS.
    
 - Looking at angular distributions during ATLAS Luminosity events on 03/04/24 ✔ Done
-     - See if timing information can be used to determine direction of trajectory. 
-     - Plot timing difference between layers for hit.
+     - See if timing information can be used to determine direction of trajectory.  ✔ Done
+     - Plot timing difference between layers for hit. ✔ Done
+ 
+TODO: Would be nice to verify these angular distributions from simulation -> enjoy
 
 - Gas mixtures in ProANUBIS (check):
     - 95% Freon
