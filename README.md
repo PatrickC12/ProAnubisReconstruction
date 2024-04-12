@@ -49,10 +49,10 @@ Tasklist:
  
 - Looking at timing distributions for dZ during ATLAS luminosity spike and cosmics only. ✔ Done
     - Compare two and three chamber events ✔ Done
-    - Compare 
- 
+    - 
 TODO: Would be nice to verify these angular distributions from simulation -> enjoy
 
 - Gas mixtures in ProANUBIS (check):
-    - 95% Freon
-    - 4% Isobutane
+    - 94.7% Freon
+    - 5% Isobutane
+    - 0.3% SF6
