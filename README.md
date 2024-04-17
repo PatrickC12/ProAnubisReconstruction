@@ -47,8 +47,12 @@ Tasklist:
      - See if timing information can be used to determine direction of trajectory.  ✔ Done
      - Plot timing difference between layers for hit. ✔ Done
  
+- Looking at timing distributions for dZ during ATLAS luminosity spike and cosmics only. ✔ Done
+    - Compare two and three chamber events ✔ Done
+    - 
 TODO: Would be nice to verify these angular distributions from simulation -> enjoy
 
 - Gas mixtures in ProANUBIS (check):
-    - 95% Freon
-    - 4% Isobutane
+    - 94.7% Freon
+    - 5% Isobutane
+    - 0.3% SF6
