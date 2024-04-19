@@ -57,6 +57,8 @@ TODO: Would be nice to verify these angular distributions from simulation -> enj
 
 - Gas mixtures in ProANUBIS: ✔ Done
 
+- Plot Residual Distributions. 
+
 - PLOT RESIDUALS OF RECONSTRUCTED EVENTS
     - 94.7% Freon
     - 5% Isobutane
