@@ -22,8 +22,8 @@ def plotPhi(array, name, zrange = [0.01,200], unit='khz', time=60.):
     plt.title(name)
     fig.tight_layout()
     ax.get_yaxis().set_visible(False)
-    plt.savefig(current_directory+"\Figures"+name.strip(" ")+".png")
-    return current_directory+"\Figures"+name.strip(" ")+".png"
+    plt.savefig(current_directory+"\\Figures\\"+name.strip(" ")+".png")
+    return current_directory+"\\Figures\\"+name.strip(" ")+".png"
 
 def plotEta(array, name, zrange = [0.01,200], unit='khz', time=60.):
     fig, ax = plt.subplots(1, figsize=(16, 8), dpi=100)
@@ -37,8 +37,8 @@ def plotEta(array, name, zrange = [0.01,200], unit='khz', time=60.):
     plt.title(name)
     fig.tight_layout()
     ax.get_xaxis().set_visible(False)
-    plt.savefig(current_directory+"Figures"+name.strip(" ")+".png")
-    return current_directory+"Figures"+name.strip(" ")+".png"
+    plt.savefig(current_directory+"\\Figures\\"+name.strip(" ")+".png")
+    return current_directory+"\\Figures\\"+name.strip(" ")+".png"
 
 def combinePlots(plots,imname):
     images = [Image.open(x) for x in plots]
