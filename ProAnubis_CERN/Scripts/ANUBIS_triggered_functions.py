@@ -1092,6 +1092,248 @@ def extract_angles_phi_eta_timed(filtered_events):
         #Project direction vector onto planes to work out phi and eta angular distributions. Should be no assymmetry in phi.
         #Expect asymmetry in eta. 
 
+#Latest Reconstruction, minimising Chi2 Now!
+
+def extract_coords_timed_Chi2(event,max_cluster_size):
+
+    #This function converts spatially clusters in RPCs into x and y coordinates (z given by RPC number)
+    # event = ['Event x',TIMEBIN, [[[RPC1_PHI_CLUSTERS],[RPC1_ETA_CLUSTERS]],[[...],[...]],...]
+
+    #Extract x and y coords of cluster in event
+    distance_per_phi_channel = 2.7625 #cm
+    distance_per_eta_channel = 2.9844 #cm
+    
+    coords = []
+
+    for RPC in range(6):
+        
+        x_clusters = [x for x in event[2][RPC][0] if len(x)<=max_cluster_size] #phi direction
+        y_clusters = [y for y in event[2][RPC][1] if len(y)<=max_cluster_size] #eta direction
+
+        #Finding size of largest cluster, consider coordinates bad if largest cluster is larger than 6.
+        x_clusters_lengths = [len(x) for x in event[2][RPC][0]]
+        y_clusters_lengths = [len(y) for y in event[2][RPC][1]]
+
+        max_length = max(max(x_clusters_lengths, default=0), max(y_clusters_lengths, default=0))
+
+        x_coords = []
+        y_coords = []
+
+        for x_cluster in x_clusters:
+           #x_cluster = [[RPC,CHANNEL,TIME,'phi'],...]
+            phi_channels = [x[1] for x in x_cluster]
+            phi_times = [t[2] for t in x_cluster]
+
+            if phi_channels:
+                avg_time = np.average(phi_times)
+
+            #Convert the channel number into a measurement along the RPC.
+            x_values = [(phi_channel+0.5)*distance_per_phi_channel for phi_channel in phi_channels]
+
+            #Variance in x coord.
+            x_var = (len(phi_channels)*distance_per_phi_channel)**2/12
+
+            x_coords.append([np.mean(x_values),x_var])
+
+        for y_cluster in y_clusters:
+            #y_cluster = [[RPC,CHANNEL,TIME,'eta'],...]
+            eta_channels_corrected = [31-y[1] for y in y_cluster] #corrected for labelling from 0 to 31.
+            y_values = [(channel_num+0.5)*distance_per_eta_channel for channel_num in eta_channels_corrected]
+            
+            y_var = (len(y_cluster)*distance_per_eta_channel)**2 /12
+            y_coords.append([np.mean(y_values),y_var])
+
+        if x_coords and y_coords and max_length<6:
+
+            coords.append([x_coords, y_coords,avg_time])
+
+        else:
+            coords.append([[],[],"N"])
+
+    #[x_coords] = [[x,err_x],...]
+    
+    #RPC_coords = [x_coords,y_coords,avg_time on phi side hits]
+
+    #coords = [[RPC1_coords],[RPC2_coords],[RPC3_coords],...]
+    return coords
+
+def extract_DT_Chi2(coords):
+    #coords = [[RPC1_coords],[RPC2_coords],[RPC3_coords],...]
+    #RPC_coords = [x_coords,y_coords,avg_time on phi side hits]
+    #[x_coords] = [[x,x_err],...]
+    
+    times = [[RPC,x[2]] for RPC, x in enumerate(coords) if isinstance(x[2], (float, int))]
+
+    #Should already be sorted, but just in case.
+    #Sort times by RPC, with RPC at lowest height at first entry.
+
+    if len(times) > 1:
+
+        times_sorted = sorted(times, key=lambda x: x[0])
+
+        #print(times_sorted)
+
+        dT = times_sorted[-1][1]-times_sorted[0][1]
+        #if dT>0 this implies the particles hit the higher RPC after the lower one, so the particle is travelling upwards here.
+        #Vice-versa for dT < 0 
+
+        return dT
+    else:
+        pass
+
+def fit_event_chi2(coordinates_with_error):
+    #Coordinates = [[[x0,var],[y0,var],z0],[[x1,var],[y1,var],z1],...,[[x5,var],[y5,var],z5]]
+    #Z coordinate given by height of relevant RPC.
+    #Using SVD
+    
+    coordinates = []
+
+    for coords in coordinates_with_error:
+        coordinates.append([coords[0][0],coords[1][0],coords[2]])
+
+    centroid = np.mean(coordinates, axis=0)
+    subtracted = coordinates-centroid
+
+    # performing SVD
+    _, _, V = np.linalg.svd(subtracted)
+    
+    # find the direction vector (which is the right singular vector corresponding to the largest singular value)
+    direction = V[0, :]
+
+    # A line is defined by the average and its direction
+    p0 = centroid
+    d = direction
+
+    #Work out Chi2. Minimise this to find best fit (from possible combos)
+
+    Chi2 = 0
+
+    for point in coordinates_with_error:
+        
+        z = point[2]
+        x = point[0][0]
+        y = point[1][0]
+        x_var = point[0][1]
+        y_var = point[1][1]
+
+        z_0 = centroid[2]
+
+        # t = (z-z_0)/d_z
+
+        t = (z-z_0)/d[2]
+
+        # Find expected (x,y) coordinates at that height.
+
+        x_traj = centroid[0] + t*d[0]
+        y_traj = centroid[1] + t*d[1]
+
+        Chi2_x = (x-x_traj)**2 / x_var
+        Chi2_y = (y-y_traj)**2 / y_var
+
+        Chi2+= Chi2_x
+        Chi2+= Chi2_y
+
+    return p0, d, Chi2, coordinates
+
+def generate_hit_coords_combo_Chi2(coords, RPC_heights, combinations=None, hit_coords=None, depth=0):
+
+    if combinations is None:
+        combinations = []
+    if hit_coords is None:
+        hit_coords = []
+
+    if depth == len(coords):
+        combinations.append(hit_coords.copy())
+        return combinations
+
+    x_values = coords[depth][0]
+    y_values = coords[depth][1]
+
+    if not x_values or not y_values:
+        return generate_hit_coords_combo_Chi2(coords, RPC_heights, combinations, hit_coords, depth + 1)
+
+    for x in x_values:
+        for y in y_values:
+            if x is not None and y is not None and isinstance(x[0], (int, float)) and isinstance(y[0], (int, float)):
+                hit_coords.append([x, y, RPC_heights[depth]])
+                generate_hit_coords_combo_Chi2(coords, RPC_heights, combinations, hit_coords, depth + 1)
+                hit_coords.pop()
+
+    return combinations
+
+def reconstruct_timed_Chi2(event,max_cluster_size):
+
+    #timed tag indicates that timing information from RPC is used to determine direction of vertical transversal of "particle" in the event.
+
+    max_Chi2 = 15
+
+    # event = ['Event x',TIMEBIN, [[[RPC1_PHI_CLUSTERS],[RPC1_ETA_CLUSTERS]],[[...],[...]],...]
+    RPC_heights = [0.6,1.8,3.0,61.8,121.8,123] #Heights of middle point of each RPC, measured from the bottom of the Triplet Low RPC. Units are cm.
+
+    #Extract x and y coords of cluster in event
+
+    coords = extract_coords_timed_Chi2(event,max_cluster_size)
+
+    dT = extract_DT_Chi2(coords)
+
+    if dT is None:
+        print("Failed to reconstruct, dT is NoneType")
+        return None
+
+    # Count the number of empty RPCs
+    empty_RPC_count = sum(1 for item in coords if item == [[], [],'N'])
+
+    # If less than 3 elements of coords are occupied, exit the function
+    if empty_RPC_count > 3:
+        print("Failed to reconstruct, not enough coords")
+        return None  # Exit the function
+
+    #ITERATING OVER EVERY POSSIBLE COMBINATION OF x,y,z over all 3 RPCs (limited to one x,y per RPC).
+    #Doesn't look particularly nice, but there are not many coordinates to loop over usually....
+
+    combinations = generate_hit_coords_combo_Chi2(coords,RPC_heights)
+
+    #Now for each combo in combinations, attempt to reconstruct a path. See which one gives the best trajectory.
+
+    #If success, print parameters of fitting function.
+    #If fail, print reconstruction failed.
+
+    Chi2_current = np.inf
+    optimised_coords = None
+    optimised_d= None
+    optimised_centroid= None
+
+    for ind,combo in enumerate(combinations):
+
+        centroid, d, Chi2, coordinates = fit_event_chi2(combo)
+        if Chi2 < Chi2_current:
+
+            # If new fit is better than old then replace old fit.
+            Chi2_current = Chi2
+            optimised_centroid = centroid
+            optimised_d = d
+            optimised_coords = coordinates
+
+    #if dT>0 this implies the particles hit the higher RPC after the lower one, so the particle is travelling upwards here.
+    #Vice-versa for dT < 0.
+
+    #dT = 0 case?
+    
+    if dT > 0:
+        if optimised_d[2] < 0:
+            optimised_d = np.multiply(optimised_d,-1)
+    else:
+        if optimised_d[2] > 0:
+            optimised_d = np.multiply(optimised_d,-1)
+
+    if Chi2_current<max_Chi2:
+        return optimised_centroid, optimised_d, optimised_coords, combinations, Chi2_current, dT
+
+    else:
+        print("Failed to reconstruct, Chi2 too large")
+        #return optimised_centroid, optimised_d, optimised_coords, combinations, residuals_current
+        return None
+
 #Efficiency Calculations
 
 def check_event_attributes_by_RPC(event,min_chamber_number,min_RPC_number,RPC_excluded):
