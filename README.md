@@ -30,7 +30,7 @@ Tasklist:
 -  Timing between RPCs. Calibrate channels and RPCs for timing diff. (Find TOF From trajectory and find dT distributions). ✔ Done
 -  Also, find directionality of muon trajectory (vertical directionality) by considering average hit time for Top and Bottom hit RPCs. Trivial task, but at the moment not so important. ✔ Done
   
--  Find efficiency of RPCs using "Tag and Probe" Method.
+-  Find efficiency of RPCs using "Tag and Probe" Method. ✔ Done
   
    https://espace.cern.ch/lip/pub/docs/LIP-STUDENTS-20-18.pdf
    
@@ -40,8 +40,11 @@ Tasklist:
 
      - Cannot exactly use the same "Tag and Probe" method outilned in the papers above. ProANUBIS triggers a readout whenever any 3 eta channels fire simultaneously within a time window (?), so attempting to use reconstructed muons from these events to test the efficiencies of the RPCs would greatly bias our efficiencies measurements.
      - Usually with "Tag and Probe" techniques, a decay near resonance is observed. Two decay products are produced, one acts as the "Tag" particle indicating a decay has occured. The expected path of the other decay product, the "Probe", is then used to measure the efficiencies of detectors being studied.
-     - With the current dataset, data is triggered by any group of 3 Eta channels across the 6 RPCs. Therefore, use eta side as trigger and probe if phi side also fires simultaneously. Find efficiency of phi side average is around 0.95. 
-     - Such efficiences measurements can be done in more earnest once LHC is running and muons passing through ATLAS muon spectrometer can be used as Tags to probe ProANUBIS.
+     - With the current dataset, data is triggered by any group of 3 Eta channels across the 6 RPCs. Therefore, use eta side as trigger and probe if phi side also fires simultaneously. Find efficiency of phi side average is around 0.95.
+     - Carried out biased measurement of efficiencies for 3 data sets: Cosmics 24_3_1, Cosmics 03/04/24, ATLAS Luminosity Spike 03/04/24.
+     - Attempted to reduce bias as much as possible by requiring all 5 other RPCs (excluding RPC under test) to be in reconstructed event. This reduces the likelihood that the RPC under test was involved in triggering the data readout for an event. 
+     - Such efficiences measurements can be done in situ with less bias once LHC is running and muons passing through ATLAS muon spectrometer can be used as Tags to probe ProANUBIS.
+     - Furthermore, the new scintillator setup in the lab would allow efficiency variation with operational parameters to be determined.
    
 - Looking at angular distributions during ATLAS Luminosity events on 03/04/24 ✔ Done
      - See if timing information can be used to determine direction of trajectory.  ✔ Done
@@ -52,7 +55,11 @@ Tasklist:
     - 
 TODO: Would be nice to verify these angular distributions from simulation -> enjoy
 
-- Gas mixtures in ProANUBIS (check):
+- Gas mixtures in ProANUBIS: ✔ Done
+
+- PLOT RESIDUALS OF RECONSTRUCTED EVENTS
     - 94.7% Freon
     - 5% Isobutane
     - 0.3% SF6
+ 
+- Measure the efficiency of this gas mixture as a function of HV in the lab TODO
