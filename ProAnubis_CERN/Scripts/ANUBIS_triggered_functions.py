@@ -521,7 +521,6 @@ def extract_coords_timed_Chi2(event,max_cluster_size):
 
         x_coords = []
         y_coords = []
-        x_times =  []
 
         for x_cluster in x_clusters:
            #x_cluster = [[RPC,CHANNEL,TIME,'phi'],...]
@@ -539,52 +538,62 @@ def extract_coords_timed_Chi2(event,max_cluster_size):
         for y_cluster in y_clusters:
             #y_cluster = [[RPC,CHANNEL,TIME,'eta'],...]
             eta_channels_corrected = [31-y[1] for y in y_cluster] #corrected for labelling from 0 to 31.
+            eta_times = [t[2] for t in y_cluster]
             y_values = [(channel_num+0.5)*distance_per_eta_channel for channel_num in eta_channels_corrected]
             
             y_var = (1*distance_per_eta_channel)**2 /12
-            y_coords.append([np.mean(y_values),y_var])
+            y_coords.append([np.mean(y_values),y_var,np.average(eta_times)])
 
         if x_coords and y_coords and max_length<6:
 
-            coords.append([x_coords, y_coords,x_times])
+            coords.append([x_coords, y_coords])
 
         else:
             coords.append([[],[],"N"])
 
     #[x_coords] = [[x,err_x,x_time],...]
     
-    #RPC_coords = [x_coords,y_coords,x_times]
+    #RPC_coords = [x_coords,y_coords]
 
     #coords = [[RPC1_coords],[RPC2_coords],[RPC3_coords],...]
     return coords
 
 def extract_DT_DZ_Chi2(coords):
 
-    #coords = [[[x0,var,time],[y0,var],z0],[[x1,var,time],[y1,var],z1],...,[[x5,var,time],[y5,var],z5]]
+    RPC_heights = [0.6,1.8,3.0,61.8,121.8,123] #Heights of middle point of each RPC, measured from the bottom of the Triplet Low RPC. Units are cm.
+    #coords = [[[x0,var,time],[y0,var,time],z0],[[x1,var,time],[y1,var,time],z1],...,[[x5,var,time],[y5,var,time],z5]]
 
-    times = [[RPC,x[0][2]] for RPC, x in enumerate(coords) if isinstance(x[2], (float, int))]
+    phi_times = [[RPC,x[0][2]] for RPC, x in enumerate(coords) if isinstance(x[2], (float, int))]
+    eta_times = [[RPC,y[1][2]] for RPC, y in enumerate(coords) if isinstance(y[2], (float, int))]
 
     #Should already be sorted, but just in case.
     #Sort times by RPC, with RPC at lowest height at first entry.
 
-    if len(times) > 1:
+    if len(phi_times) > 1:
 
-        times_sorted = sorted(times, key=lambda x: x[0])
+        phi_times_sorted = sorted(phi_times, key=lambda x: x[0])
 
         #print(times_sorted)
 
-        dT = times_sorted[-1][1]-times_sorted[0][1]
+        phi_dT = phi_times_sorted[-1][1]-phi_times_sorted[0][1]
         #if dT>0 this implies the particles hit the higher RPC after the lower one, so the particle is travelling upwards here.
         #Vice-versa for dT < 0 
 
-        RPC_heights = [0.6,1.8,3.0,61.8,121.8,123] #Heights of middle point of each RPC, measured from the bottom of the Triplet Low RPC. Units are cm.
+        phi_first_RPC = phi_times_sorted[0][0]
+        phi_last_RPC = phi_times_sorted[-1][0]
 
-        first_RPC = times_sorted[0][0]
-        last_RPC = times_sorted[-1][0]
+        dZ = RPC_heights[phi_last_RPC] - RPC_heights[phi_first_RPC]
 
-        dZ = RPC_heights[last_RPC] - RPC_heights[first_RPC]
+        if len(eta_times) >1:
+
+            eta_times_sorted = sorted(eta_times, key=lambda x: x[0])
+
+            eta_dT = eta_times_sorted[-1][1]-eta_times_sorted[0][1]
+
+        dT = [phi_dT,eta_dT]
     
         return dT, dZ
+    
     else:
         pass
 
@@ -691,7 +700,7 @@ def reconstruct_timed_Chi2(event,max_cluster_size):
 
     #Extract x and y coords of cluster in event
 
-    coords = ANT.extract_coords_timed_Chi2(event,max_cluster_size)
+    coords = extract_coords_timed_Chi2(event,max_cluster_size)
 
     # Count the number of empty RPCs
     empty_RPC_count = sum(1 for item in coords if item == [[], [],'N'])
@@ -732,11 +741,14 @@ def reconstruct_timed_Chi2(event,max_cluster_size):
     optimised_coords = None
     optimised_d= None
     optimised_centroid= None
-    dT = np.inf
+    dT = [np.inf,np.inf]
 
     for ind,combo in enumerate(combinations):
 
         centroid, d, Chi2, coordinates, delta_T, delta_Z= fit_event_chi2(combo)
+
+        #delta_T = [delta_T_phi,delta_T_eta]
+
         if Chi2 < Chi2_current:
 
             # If new fit is better than old then replace old fit properties.
@@ -752,9 +764,9 @@ def reconstruct_timed_Chi2(event,max_cluster_size):
 
     #dT = 0 case?
     
-    if dT != np.inf:
+    if dT[0] != np.inf:
 
-        if dT > 0:
+        if dT[0] > 0:
             if optimised_d[2] < 0:
                 optimised_d = np.multiply(optimised_d,-1)
         else:
@@ -855,6 +867,21 @@ def reconstruct_timed_Chi2_ByRPC(event,max_cluster_size, RPC_excluded):
     if empty_RPC_count > 3:
         #print("Failed to reconstruct, not enough coords")
         return None  # Exit the function
+    
+    cross_chamberness = 0
+
+    if coords[0] != [[], [], 'N'] or coords[1] != [[], [], 'N'] or coords[2] != [[], [], 'N']:
+        cross_chamberness += 1
+
+    if coords[3] != [[], [], 'N']:
+        cross_chamberness += 1
+
+    if coords[4] != [[], [], 'N'] or coords[5] != [[], [], 'N']:
+        cross_chamberness += 1
+
+    if cross_chamberness < 2:
+        #print("Failed to reconstruct, too few chambers")
+        return None
 
     #ITERATING OVER EVERY POSSIBLE COMBINATION OF x,y,z over all 3 RPCs (limited to one x,y per RPC).
     #Doesn't look particularly nice, but there are not many coordinates to loop over usually....
@@ -1107,6 +1134,7 @@ def makeEventDisplay(eventData,name):
         os.remove(plot)
 
 def plot_dark_clustering(phi_cluster_distribution,eta_cluster_distribution, time ="60 Seconds"):
+    # MR
     
     RPC_description = ['Triplet Low','Triplet Mid','Triplet Top','Singlet','Doublet Low','Doublet Top']
     multi_array = []
@@ -1508,13 +1536,14 @@ def plot_angle_distribution_absolute(angles, title, label):
     plt.legend()
     plt.show()
 
-def extract_angles_phi_eta_timed_chi2_DZ(filtered_events,min_number_RPC):
+def extract_angles_phi_eta_timed_DZ(filtered_events):
 
     #Input is filtered_events, output of ANT.filter_events() function
 
     angles_eta = []
     angles_phi = []
-    delta_times = []
+    delta_times_phi= []
+    delta_times_eta= []
     dZ = []
     chi2_values = []
 
@@ -1526,7 +1555,9 @@ def extract_angles_phi_eta_timed_chi2_DZ(filtered_events,min_number_RPC):
 
         if result is not None:
 
-            delta_times.append(result[5])
+            delta_times_phi.append(result[5][0])
+            delta_times_eta.append(result[5][1])
+
             chi2_values.append(result[4])
 
             dZ.append(result[6])
@@ -1562,6 +1593,8 @@ def extract_angles_phi_eta_timed_chi2_DZ(filtered_events,min_number_RPC):
                 theta_phi*=-1
 
             angles_phi.append(theta_phi)
+
+    delta_times = [delta_times_phi,delta_times_eta]
 
     return angles_eta, angles_phi, delta_times, dZ, chi2_values
 
