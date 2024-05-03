@@ -28,7 +28,21 @@ I will compile a more comprehensive pseudo-code esque description of the reconst
 
 ![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/f32c77a0-e70f-4c06-b33a-0bb9aa48e625)
 
-Project the reconstructed 
+Project the reconstructed trajectory vector onto the XZ and YZ planes of the proANUBIS setup.
+
+Below is a plot of muon distribution for 3 hours of cosmics. The event reconstruction rate is ~ 0.33, so the counts match the amount you would expect in ~ 1 hour, the black line shows expected distribution of muons through proANUBIS in 1 hour ( from detailed simulation work done by Dr Revering, simulating muon trajectories through Earth and cavern entrance to proANUBIS).
+
+(Filtering here is atleast 3 RPCs, no constraint on cross-chamberdness)
+
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/69b19503-69fe-4de2-b46e-439d41860bc4)
+
+The RPCs in the triplet layer of proANUBIS are close together (~12 mm between RPC centres), so the granularity of the detectors have a significant effect on the produced angular distributions.
+This causes peaks in the counts at 0 degrees, 32 degrees, 51 degrees and 68 degrees. 
+
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/c93f0889-758a-4784-bee6-f77547dd180e)
+
+The majority of the cosmic events pass through the triplet layer of proANUBIS only, so enforcing cross chamber is a good filter to cut off the cosmic ray muons. The geometry of proANUBIS is such that 
+
 
 ## Efficiencies:
 
