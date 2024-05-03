@@ -67,5 +67,6 @@ TODO: Would be nice to verify these angular distributions from simulation -> enj
       - 94.7% Freon
       - 5% Isobutane
       - 0.3% SF6
+ProANUBIS using 5.8 - 6.0 kV
  
 - Measure the efficiency of this gas mixture as a function of HV in the lab TODO
