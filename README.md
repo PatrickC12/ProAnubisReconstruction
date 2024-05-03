@@ -52,8 +52,12 @@ Tasklist:
  
 - Looking at timing distributions for dZ during ATLAS luminosity spike and cosmics only. ✔ Done
     - Compare two and three chamber events ✔ Done
+ 
     - 
-TODO: Would be nice to verify these angular distributions from simulation -> enjoy
+Result of Dr Revering's simulations of cosmic flux in proANUBIS show good agreement with reconstructed events (in terms of distribution form).
+
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/385e1e88-a6a6-488b-b32f-d08311dfe845)
+
 
 - Gas mixtures in ProANUBIS: ✔ Done
 
