@@ -10,6 +10,19 @@ Functions necessary contained in ANUBIS_triggered_functions.py ("ANT") and anubi
 
 For example of how to run the code see in scripts folder file : ANUBIS_reconstruction_example_60s.ipynb. This jupyter notebook will run through reconstruction on a small data set.
 
+Reconstruction Algorithm (quick):
+
+1) Cluster events temporally, real particle events will be correlated in time. Should filter out most dark counts.
+2) Cluster hits spatially into x and y coordinates on RPCs.
+3) Generate all possible combinations of coordiante sets that could reconsctruct an event.
+4) Fit each combination with SVD.
+5) Find combination that minimises Chi2 value of reconstruction.
+
+
+Angular Distributions:
+
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/f32c77a0-e70f-4c06-b33a-0bb9aa48e625)
+
 Tasklist:
 
 - Cluster events temporally and spatially. ✔ Done
