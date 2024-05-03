@@ -1,4 +1,4 @@
-# ProANUBIS Reconstruction
+  # ProANUBIS Reconstruction
 
 ![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/06402d57-ecf8-4095-9aa8-93e6ff16fdb6)
 
@@ -60,8 +60,12 @@ TODO: Would be nice to verify these angular distributions from simulation -> enj
 - Plot Residual Distributions. 
 
 - PLOT RESIDUALS OF RECONSTRUCTED EVENTS
-    - 94.7% Freon
-    - 5% Isobutane
-    - 0.3% SF6
+
+- proANUBIS gas mixture
+    - 30% CO2
+    - 70% CERN mixture:
+      - 94.7% Freon
+      - 5% Isobutane
+      - 0.3% SF6
  
 - Measure the efficiency of this gas mixture as a function of HV in the lab TODO
