@@ -34,15 +34,20 @@ Below is a plot of muon distribution for 3 hours of cosmics. The event reconstru
 
 (Filtering here is atleast 3 RPCs, no constraint on cross-chamberdness)
 
-![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/69b19503-69fe-4de2-b46e-439d41860bc4)
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/0ad34672-e9ee-4d7a-b00c-dc5799accfdb)
+
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/a6511c0e-33cc-45a1-a2ad-2d7547cd27ce)
 
 The RPCs in the triplet layer of proANUBIS are close together (~12 mm between RPC centres), so the granularity of the detectors have a significant effect on the produced angular distributions.
 This causes peaks in the counts at 0 degrees, 32 degrees, 51 degrees and 68 degrees. 
 
-![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/c93f0889-758a-4784-bee6-f77547dd180e)
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/acc2c0b7-ccfe-467b-9532-2c61d42a3d58)
 
-The majority of the cosmic events pass through the triplet layer of proANUBIS only, so enforcing cross chamber is a good filter to cut off the cosmic ray muons. The geometry of proANUBIS is such that 
+The majority of the cosmic events pass through the triplet layer of proANUBIS only, so enforcing cross chamber is a good filter to cut off the cosmic ray muons. The geometry of proANUBIS is such that 60 degrees is the maximum angle (eta) for cross chamber events. The plots below enforce the cross chamber constraint. 
 
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/99a41b3c-7842-4198-9849-6eaadc469f4a)
+
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/c00c0e2b-c6c7-4b94-a771-c609224e02e7)
 
 ## Efficiencies:
 
