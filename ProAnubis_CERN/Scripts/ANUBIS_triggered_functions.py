@@ -20,6 +20,7 @@ import plotly
 import plotly.graph_objs as go
 import plotly.express as px
 import csv
+import re
 
 # if Functions labelled MR:
 #   written previously by Dr Michael Revering.
@@ -698,6 +699,9 @@ def reconstruct_timed_Chi2(event,max_cluster_size):
     # event = ['Event x',TIMEBIN, [[[RPC1_PHI_CLUSTERS],[RPC1_ETA_CLUSTERS]],[[...],[...]],...]
     RPC_heights = [0.6,1.8,3.0,61.8,121.8,123] #Heights of middle point of each RPC, measured from the bottom of the Triplet Low RPC. Units are cm.
 
+    event_id_string = event[0]
+    event_id = int(re.search(r'\d+$', event_id_string).group())
+
     #Extract x and y coords of cluster in event
 
     coords = extract_coords_timed_Chi2(event,max_cluster_size)
@@ -851,6 +855,8 @@ def reconstruct_timed_Chi2_ByRPC(event,max_cluster_size, RPC_excluded):
     # event = ['Event x',TIMEBIN, [[[RPC1_PHI_CLUSTERS],[RPC1_ETA_CLUSTERS]],[[...],[...]],...]
     RPC_heights = [0.6,1.8,3.0,61.8,121.8,123] #Heights of middle point of each RPC, measured from the bottom of the Triplet Low RPC. Units are cm.
 
+    event_id_string = event[0]
+    event_id = int(re.search(r'\d+$', event_id_string).group())
 
     #Extract x and y coords of cluster in event
     coords = ANT.extract_coords_timed_Chi2(event,max_cluster_size)
