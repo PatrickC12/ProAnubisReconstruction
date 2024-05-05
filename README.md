@@ -89,9 +89,9 @@ ANUBIS Twiki: https://twiki.cern.ch/twiki/bin/view/ANUBIS/
 - proANUBIS gas mixture
     - 30% CO2
     - 70% CERN mixture:
-      - 94.7% Freon
-      - 5% Isobutane
-      - 0.3% SF6
+      - 94.7% Freon (ionising gas)
+      - 5% Isobutane (photon quencher)
+      - 0.3% SF6 (electron quenncher)
       - 
 ProANUBIS using 5.8 - 6.0 kV HV.
 Work being carried out on measurement of RPC efficiency using this (and similar) gas mixture in the ATLAS project room in the Cavendish Lab.
