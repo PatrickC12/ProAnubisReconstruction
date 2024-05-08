@@ -83,6 +83,8 @@ Work has been carried out in the ATLAS project room to upgrade the scintillation
 
 ![efficiency_logic_setup](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/c2c9aefc-f58d-45ae-ba57-37990f3fef15)
 
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/9a2747ab-f7a8-4bb7-bc2c-6e0d6d7c929d)
+
 ## Todo:
 
 - The timing of hits needs to be looked into. Current analysis suggests a convolution of a large number of errors, e.g. different FEBs, different TDCs. The analsysis of the timing distributions is really only to first order currently, the first step to improve this would be to include effects of timewalk of signal 
