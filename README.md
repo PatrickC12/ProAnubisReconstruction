@@ -62,13 +62,13 @@ The efficiencies of the RPCs can be measured in-Situ if so desired. Note that th
 
 As is seen from the above plot, the efficiencies of the RPCs plateau within ~ 5cm which corresponds to 2 strip widths in the RPC. Taking the limit of tolerance to larger values, the geometrical constraint on the reconstructed hit is being relaxed, but we are still seeing rather low efficiences! This may be an artifact of the selection constraints for hits in the RPC under test. 
 
-A more relaxed probe of the test RPCs were carried out, the reconstruction of the tagged muon was still kept strict (all 5 other RPC, 15ns time window and max cluster size 3). No restriction was placed on cluster sizes or the location of a hit, geometrical effects were ignored. Rather a temporal tolerance was placed on the test RPC to ask if it produced a hit (anywhere) within some tolerance of the reconstructed event. The results for the doublet suggest an issue with the TDC chips, indeed the TDC EE04 was entirely resposinble for DoubletHigh phi side and had the largest number of corrupted timestamps of all the TDCs. (Corrupted timestamp here just means a channel recorded a time outside of 0-1250 ns, which is the window in which data is readout on trigger). 
+A more relaxed probe of the test RPCs were carried out, the reconstruction of the tagged muon was still kept strict (all 5 other RPC, 15ns time window and max cluster size 3). No restriction was placed on cluster sizes or the location of a hit, geometrical effects were ignored. Rather a temporal tolerance was placed on the test RPC to ask if it produced a hit (anywhere) within some tolerance of the reconstructed event. 
 
 ![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/2a03720e-b6aa-45af-bbc3-7540832eaa64)
 
-![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/80d2e6f7-e6f9-43cf-9a28-7deaa0f5734f)
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/ec1bc588-2ad3-4ab6-8637-54b5ec245310)
 
-
+A scan of the plateau efficiency of the relaxed probe, with varying reconstruction time window, suggests that some parts of the RPC are more efficient then others. Having a stricter time window biases for events closer to the FEBs on phi and eta side, since the effect of timewalk will be less. Only for hits close to phi and eta FEBs will the phi and eta channels hit within the set time window. The increase in efficiency seems to then suggest that the phi channels closer to the eta FEB are more efficient.
 
 Once proANUBIS is synced with the LHC clock, a less biased tag and probe method can be used. This will involve tagging muons passing through the ATLAS detection volume and using these tagged muons to probe the proANUBIS RPC strips. This can achieved using resonance muon, anti-muon pairs (as is done in this paper: https://iopscience.iop.org/article/10.1088/1748-0221/14/10/C10020/pdf), or by using muons identified by the ATLAS detector, as proANUBIS lies outside the main detector volume !
 
@@ -80,6 +80,8 @@ Work has been carried out in the ATLAS project room to upgrade the scintillation
   - RPC geometries.
 
 ![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/08ff0d09-3cf9-437b-8a74-26c6bd90a283)
+
+![efficiency_logic_setup](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/c2c9aefc-f58d-45ae-ba57-37990f3fef15)
 
 ## Todo:
 
