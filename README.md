@@ -45,7 +45,7 @@ This causes peaks in the counts at 0 degrees, 32 degrees, 51 degrees and 68 degr
 
 The majority of the cosmic events pass through the triplet layer of proANUBIS only, so enforcing cross chamber is a good filter to cut off the cosmic ray muons. The geometry of proANUBIS is such that 60 degrees is the maximum angle (eta) for cross chamber events. The plots below enforce the cross chamber constraint. 
 
-![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/99a41b3c-7842-4198-9849-6eaadc469f4a)
+![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/e950af9c-8902-4635-9343-52a393798f19)
 
 ![image](https://github.com/PatrickC12/ProAnubisReconstruction/assets/123903514/c00c0e2b-c6c7-4b94-a771-c609224e02e7)
 
