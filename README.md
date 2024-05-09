@@ -87,7 +87,13 @@ Work has been carried out in the ATLAS project room to upgrade the scintillation
 
 ## Todo:
 
-- The timing of hits needs to be looked into. Current analysis suggests a convolution of a large number of errors, e.g. different FEBs, different TDCs. The analsysis of the timing distributions is really only to first order currently, the first step to improve this would be to include effects of timewalk of signal 
+- The timing of hits needs to be looked into. Current analysis suggests a convolution of a large number of errors, e.g. different FEBs, different TDCs. The analsysis of the timing distributions is really only to first order currentl.
+  - The first step to improve this would be to include effects of timewalk of signal.
+
+- Rework some aspects of the reconstruction algorithm.
+  - Look into applying spatial clustering first. Define time of cluster as earliest time.
+  - After this spatial clustering, carry out the temporal clustering using the previous adaptive time window.
+  - Account for afterpulse.
 
 ## Other links:
 
